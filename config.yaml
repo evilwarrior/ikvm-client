@@ -1,0 +1,19 @@
+ikvm-server:
+  host: ikvm.local
+  #port: 7130
+  #ipv6: false
+  #ipv4: false
+mjpg-streamer:
+  #port: 8080
+  #capture-device: video0
+  #capture-scale: "16:9"
+  #capture-quality: best
+serial-device:
+  #port: usb0
+  #usbid: "1231:1f66"
+window-option:
+  #fullscreen: false
+  #resolution: 1920x1080
+log-option:
+  path: ikvm-client.log
+  level: 3

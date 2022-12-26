@@ -615,13 +615,14 @@ class iKvmClient:
             cap_out = None
 
         if cap_out is None:
-            self.__log_write(2, "Fetch frame from MJPG-Streamer timeout")
+            self.__log_write(2, "Fetch frame from MJPG-Streamer timeout, now re-connnect")
+            self.__connect_mjpg()
             return None
         elif cap_out['result'] == 'lost':
             self.__log_write(1, "Disconnected from MJPG-Streamer, now re-connnect")
             self.__connect_mjpg()
             return None
-        elif cap_out['result'] != 'success':
+        elif cap_out['result'] == 'error':
             self.__log_write(2, "Fetch frame from MJPG-Streamer failed. Detail: " + cap_out['detail'])
             return None
 

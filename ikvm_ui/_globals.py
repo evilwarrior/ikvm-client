@@ -74,6 +74,7 @@ FRAMERATE_MENU  = 4
 SEND_MENU       = 5
 TOTAL_MENU      = 6
 
+# HID definitions
 MOUSE_LEFT       = 1
 MOUSE_MIDDLE     = 2
 MOUSE_RIGHT      = 3

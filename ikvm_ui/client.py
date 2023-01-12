@@ -779,6 +779,11 @@ class iKvmClient:
                     self.__log_write(4, 'Pygame received quit event')
                     self.__run = False
 
+                ## Rerender as Window Moved or Restored
+                elif py_event.type in (pygame.WINDOWMOVED, pygame.WINDOWRESTORED):
+                    self.__screen.fill(BG_COLOR)
+                    self.__render_main()
+
                 ## Mouse Click
                 elif py_event.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
                     self.__mouse_click_event(py_event, cur_in_cap, cur)

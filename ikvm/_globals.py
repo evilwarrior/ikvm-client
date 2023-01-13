@@ -14,8 +14,12 @@ def address_family(ip):
         raise TypeError(f'ip "{ip}" with invalid format')
     return 'ipv4'
 
+ARDUINO_MAX_KEY = 0xFB
+ARDUINO_MOUSE_BUTTONS = (1, 2, 4)
+
 BUF = 1024
 TIMEOUT_RT = 10  # used in socket send (real-time)
+TIMEOUT_LAG = 4 # second(s) used in start/end function for waiting response
 
 class UserDefinedQuit:
     pass
@@ -23,7 +27,10 @@ Quit = UserDefinedQuit() # Used when peer disconnect unexpected
 
 __all__ = [
         'address_family',
+        'ARDUINO_MAX_KEY',
+        'ARDUINO_MOUSE_BUTTONS',
         'BUF',
         'TIMEOUT_RT',
+        'TIMEOUT_LAG',
         'Quit',
 ]

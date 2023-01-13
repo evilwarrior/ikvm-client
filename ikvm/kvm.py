@@ -8,11 +8,6 @@ from time import sleep, time
 from functools import partial
 from math import gcd
 
-ARDUINO_MAX_KEY = 0xFB
-ARDUINO_MOUSE_BUTTONS = (1, 2, 4)
-
-TIMEOUT_LAG = 4 # second(s) used in start/end function for waiting response
-
 res_scale = lambda w, h: (int(w/gcd(w, h)), int(h/gcd(w, h)))
 
 class Kvm:
@@ -193,6 +188,9 @@ class Kvm:
     def __goodbye(self):
         self.__run = False
         self.__sock.close()
+
+    def __handle_ask_alive(self):
+        self.__send(REPLY_ALIVE_MSG)
 
     def __handle_list_uarts_response(self):
         uarts = []
@@ -494,6 +492,8 @@ class Kvm:
 
     __RECV_HANDLE_SWITCH = {
         TYPE_GOODBYE: __goodbye,
+        TYPE_ASK_ALIVE: __handle_ask_alive,
+        #TYPE_REPLY_ALIVE: __handle_reply_alive,
         TYPE_LIST_UART_RES: __handle_list_uarts_response,
         TYPE_LIST_CAP_RES: __handle_list_captures_response,
         TYPE_RUN_MJPG_RES: partial(__handle_status_code_response, res_type=TYPE_RUN_MJPG_RES),
@@ -545,8 +545,7 @@ class Kvm:
         while True:
             sleep(0.01)
             if time()-timer > TIMEOUT_LAG:
-                ip = f'[{self.ip}]' if AF_INET == socket.AF_INET6 else self.ip # ipv6 representation
-                return {'result': 'error', 'detail': f'Connect to server {ip}:{self.port} timeout'}
+                return {'result': 'error', 'detail': 'Send message timeout'}
             try:
                 res = self.__send(HANDSHAKE_MSG)
             except socket.error as e:
@@ -566,7 +565,7 @@ class Kvm:
         while True:
             sleep(0.01)
             if time()-timer > TIMEOUT_LAG:
-                return {'result': 'error', 'detail': 'Received Handshake response timeout'}
+                return {'result': 'error', 'detail': 'Received response timeout'}
             if buf == b'':
                 res = self.__recv()
                 if res is None:

@@ -11,6 +11,7 @@ from threading import Thread, Lock
 from time import sleep
 from datetime import datetime
 from math import ceil, copysign
+from screeninfo import get_monitors
 if OS == 'WINDOWS':
     import keyboard
 
@@ -386,10 +387,10 @@ class iKvmClient:
         pygame.init()
         pygame.display.set_caption('iKVM')
         self.__fullscreen = fullscreen
-        self.__monitor_w = pygame.display.Info().current_w
-        self.__monitor_h = pygame.display.Info().current_h
+        self.__win_x, self.__win_y = 0, 0 # window position
         if cap_res_in_win == (0, 0):
-            self.__cap_res_in_win = (self.__monitor_w-SIDE_W-160, self.__monitor_h-90)
+            w, h = get_monitors()[0].width, get_monitors()[0].height
+            self.__cap_res_in_win = (w-SIDE_W-160, h-90)
         else:
             self.__cap_res_in_win = cap_res_in_win
 
@@ -421,6 +422,16 @@ class iKvmClient:
 
         ## Settings of Keyboard Hook
         self.__hooked = False
+
+    def __get_resolution(self):
+        monitors = get_monitors()
+        for monitor in monitors:
+            if (self.__win_x <  monitor.x+monitor.width and
+                self.__win_x >= monitor.x and
+                self.__win_y <  monitor.y+monitor.height and
+                self.__win_y >= monitor.y):
+                return (monitor.width, monitor.height)
+        return (monitors[0].width, monitors[0].height)
 
     def __open_serial_device(self, device):
         for i in range(1, RETRY+1):
@@ -493,7 +504,7 @@ class iKvmClient:
 
     def __compute_side_show_max(self):
         if self.__fullscreen:
-            gui_h = self.__monitor_h
+            gui_h = self.__get_resolution()[1]
         else:
             cap_h = self.__cap_res_in_win[1]
             gui_h = SIDE_H if cap_h < SIDE_H else cap_h
@@ -503,7 +514,7 @@ class iKvmClient:
     def __render_main(self):
         ## Settings of Screen
         if self.__fullscreen:
-            gui_w, gui_h = self.__monitor_w, self.__monitor_h
+            gui_w, gui_h = self.__get_resolution()
             self.__cap_res = (gui_w-SIDE_W, gui_h)
             self.__screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
             cap_w = self.__cap_res[0]
@@ -779,8 +790,14 @@ class iKvmClient:
                     self.__log_write(4, 'Pygame received quit event')
                     self.__run = False
 
-                ## Rerender as Window Moved or Restored
-                elif py_event.type in (pygame.WINDOWMOVED, pygame.WINDOWRESTORED):
+                ## Window Moved
+                elif py_event.type == pygame.WINDOWMOVED:
+                    self.__win_x, self.__win_y = py_event.x, py_event.y
+                    self.__screen.fill(BG_COLOR)
+                    self.__render_main()
+
+                ## Window Restored
+                elif py_event.type == pygame.WINDOWRESTORED:
                     self.__screen.fill(BG_COLOR)
                     self.__render_main()
 
@@ -792,6 +809,7 @@ class iKvmClient:
                 elif py_event.type in (pygame.KEYUP, pygame.KEYDOWN):
                     self.__keyboard_input_event(py_event, cur_in_cap)
 
+                ## Mouse Move
                 elif py_event.type == pygame.MOUSEMOTION:
                     self.__mouse_move_event(cur_in_cap)
 
